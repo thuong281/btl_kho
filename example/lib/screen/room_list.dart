@@ -10,21 +10,16 @@ class RoomList extends StatefulWidget {
 }
 
 class _RoomListState extends State<RoomList> {
-  List<Room> room = [];
-
+  List<Room> _room = [];
+  List<Room> _roomFilter = [];
+  bool _firstLoad = true;
   Future _future;
   Position position = new Position();
 
   @override
   void initState() {
     super.initState();
-    _future = getCurrentLocation();
-  }
-
-  Future<Position> getCurrentLocation() async {
-    Position position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
-    return position;
+    _future = NetworkRequest.fetchRoomss();
   }
 
   circularProgress() {
@@ -34,7 +29,7 @@ class _RoomListState extends State<RoomList> {
   }
 
   void fetch() {
-    room = NetworkRequest.fetchData();
+    _room = NetworkRequest.fetchData();
   }
 
   @override
@@ -42,7 +37,12 @@ class _RoomListState extends State<RoomList> {
     fetch();
     return Scaffold(
       appBar: AppBar(
-        title: Text("bu cac tao"),
+        backgroundColor: Colors.green,
+        centerTitle: true,
+        title: Container(
+          padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
+          child: _searchBar(),
+        ),
       ),
       body: FutureBuilder(
         future: _future,
@@ -50,16 +50,70 @@ class _RoomListState extends State<RoomList> {
           if (snapshot.data == null) {
             return circularProgress();
           } else {
-            position = snapshot.data;
-            return ListView.builder(
-              itemCount: room.length,
-              itemBuilder: (context, index) {
-                return RoomTile(room[index], position);
-              },
-            );
+            _room = snapshot.data;
+            if (_firstLoad) {
+              _firstLoad = false;
+              _roomFilter = _room;
+            }
+            if (_roomFilter.length > 0) {
+              return ListView.builder(
+                itemCount: _roomFilter.length,
+                itemBuilder: (context, index) {
+                  return RoomTile(_roomFilter[index]);
+                },
+              );
+            } else {
+              return _emptyList();
+            }
           }
         },
       ),
+    );
+  }
+
+  Widget _searchBar() {
+    return TextField(
+      decoration: InputDecoration(
+        isDense: true,
+        contentPadding: EdgeInsets.all(2),
+        fillColor: Colors.white,
+        filled: true,
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white, width: 2.0),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.pink, width: 2.0),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        prefixIcon: new Icon(
+          Icons.search,
+          color: Colors.red,
+          size: 25,
+        ),
+        hintText: 'Tìm kiếm theo địa chỉ',
+      ),
+      onChanged: (text) {
+        text = text.toLowerCase();
+        List<String> words = text.split(" ");
+        setState(
+          () {
+            _roomFilter = _room.where((room) {
+              var roomAddress = room.address.toLowerCase();
+              for (String word in words) {
+                if (!roomAddress.contains(word)) return false;
+              }
+              return true;
+            }).toList();
+          },
+        );
+      },
+    );
+  }
+
+  Widget _emptyList() {
+    return Center(
+      child: Text('Không tìm thấy phòng'),
     );
   }
 }

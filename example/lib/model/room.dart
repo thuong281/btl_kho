@@ -1,40 +1,63 @@
+// To parse this JSON data, do
+//
+//     final room = roomFromJson(jsonString);
+
+import 'dart:convert';
+
+List<Room> roomFromJson(String str) =>
+    List<Room>.from(json.decode(str).map((x) => Room.fromJson(x)));
+
+String roomToJson(List<Room> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
 class Room {
-  int id;
-  String title;
-  List<String> imageUrl;
+  Room({
+    this.name,
+    this.price,
+    this.area,
+    this.district,
+    this.image,
+    this.description,
+    this.address,
+    this.phone,
+    this.lat,
+    this.long,
+  });
+
+  String name;
   String price;
-  double area;
+  String area;
+  String district;
+  List<String> image;
+  String description;
+  String address;
+  String phone;
   double lat;
   double long;
-  String location;
-  String description;
-  String furniture;
-  String phone;
 
-  Room(
-      {this.id,
-      this.title,
-      this.imageUrl,
-      this.price,
-      this.area,
-      this.lat,
-      this.long,
-      this.location,
-      this.description,
-      this.furniture,
-      this.phone});
+  factory Room.fromJson(Map<String, dynamic> json) => Room(
+        name: json["name"],
+        price: json["price"],
+        area: json["area"] == null ? null : json["area"],
+        district: json["district"],
+        image: List<String>.from(json["image"].map((x) => x)),
+        description: json["description"],
+        address: json["address"],
+        phone: json["phone"],
+        lat: json["lat"].toDouble(),
+        long: json["long"].toDouble(),
+      );
 
-  Room.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    title = json['title'];
-    imageUrl = json['imageUrl'];
-    price = json['price'];
-    area = json['area'];
-    lat = json['lat'];
-    long = json['long'];
-    location = json['code'];
-    description = json['description'];
-    furniture = json['furniture'];
-    phone = json['phone'];
-  }
+  Map<String, dynamic> toJson() => {
+        "name": name,
+        "price": price,
+        "area": area == null ? null : area,
+        "district": district,
+        "image": List<dynamic>.from(image.map((x) => x)),
+        "description": description,
+        "address": address,
+        "phone": phone,
+        "lat": lat,
+        "long": long,
+      };
 }

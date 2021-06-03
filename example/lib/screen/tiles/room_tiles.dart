@@ -6,20 +6,17 @@ import 'package:wemapgl_example/screen/room_detail.dart';
 
 class RoomTile extends StatelessWidget {
   @required
-  final Position position;
   final Room room;
 
-  const RoomTile(this.room, this.position);
+  const RoomTile(this.room);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
         onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => RoomDetail(room, position)));
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => RoomDetail(room)));
         },
         title: Row(
           children: <Widget>[
@@ -30,9 +27,9 @@ class RoomTile extends StatelessWidget {
                 aspectRatio: 1,
                 child: FittedBox(
                   child: CachedNetworkImage(
-                    imageUrl: room.imageUrl[0],
+                    imageUrl: room.image[0],
                     placeholder: (context, url) =>
-                        Image.asset('assests/placeholder.jpeg'),
+                        Image.asset('assests/placeholder.jpg'),
                   ),
                   fit: BoxFit.fill,
                 ),
@@ -46,7 +43,7 @@ class RoomTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    room.title,
+                    room.name,
                     overflow: TextOverflow.clip,
                     softWrap: true,
                     maxLines: 2,
@@ -56,7 +53,7 @@ class RoomTile extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    room.area.toString() + " m\u00B2",
+                    room.area.toString(),
                     overflow: TextOverflow.clip,
                     softWrap: true,
                     maxLines: 2,
@@ -74,14 +71,6 @@ class RoomTile extends StatelessWidget {
                       children: <TextSpan>[
                         TextSpan(
                           text: room.price.toString(),
-                          style: TextStyle(
-                            fontSize: 15,
-                            wordSpacing: -0.4,
-                            color: Color.fromRGBO(234, 52, 31, 1),
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' đ',
                           style: TextStyle(
                             fontSize: 15,
                             wordSpacing: -0.4,
