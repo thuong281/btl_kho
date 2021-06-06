@@ -3,14 +3,17 @@ import 'package:geolocator/geolocator.dart';
 import 'package:wemapgl_example/model/room.dart';
 import 'package:wemapgl_example/network/network_request.dart';
 import 'package:wemapgl_example/screen/tiles/room_tiles.dart';
+import 'package:tiengviet/tiengviet.dart';
 
 class RoomList extends StatefulWidget {
+  final List<Room> room;
+  RoomList({this.room});
+
   @override
   _RoomListState createState() => _RoomListState();
 }
 
 class _RoomListState extends State<RoomList> {
-  List<Room> _room = [];
   List<Room> _roomFilter = [];
   bool _firstLoad = true;
   Future _future;
@@ -19,55 +22,12 @@ class _RoomListState extends State<RoomList> {
   @override
   void initState() {
     super.initState();
-    _future = NetworkRequest.fetchRoomss();
+    _future = NetworkRequest.fetchRooms();
   }
 
   circularProgress() {
     return Center(
       child: CircularProgressIndicator(),
-    );
-  }
-
-  void fetch() {
-    _room = NetworkRequest.fetchData();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    fetch();
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.green,
-        centerTitle: true,
-        title: Container(
-          padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
-          child: _searchBar(),
-        ),
-      ),
-      body: FutureBuilder(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.data == null) {
-            return circularProgress();
-          } else {
-            _room = snapshot.data;
-            if (_firstLoad) {
-              _firstLoad = false;
-              _roomFilter = _room;
-            }
-            if (_roomFilter.length > 0) {
-              return ListView.builder(
-                itemCount: _roomFilter.length,
-                itemBuilder: (context, index) {
-                  return RoomTile(_roomFilter[index]);
-                },
-              );
-            } else {
-              return _emptyList();
-            }
-          }
-        },
-      ),
     );
   }
 
@@ -98,10 +58,11 @@ class _RoomListState extends State<RoomList> {
         List<String> words = text.split(" ");
         setState(
           () {
-            _roomFilter = _room.where((room) {
+            _roomFilter = widget.room.where((room) {
               var roomAddress = room.address.toLowerCase();
               for (String word in words) {
-                if (!roomAddress.contains(word)) return false;
+                if (!TiengViet.parse(roomAddress)
+                    .contains(TiengViet.parse(word))) return false;
               }
               return true;
             }).toList();
@@ -114,6 +75,32 @@ class _RoomListState extends State<RoomList> {
   Widget _emptyList() {
     return Center(
       child: Text('Không tìm thấy phòng'),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_firstLoad) {
+      _firstLoad = false;
+      _roomFilter = widget.room;
+    }
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.green,
+        centerTitle: true,
+        title: Container(
+          padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
+          child: _searchBar(),
+        ),
+      ),
+      body: _roomFilter.length > 0
+          ? ListView.builder(
+              itemCount: _roomFilter.length,
+              itemBuilder: (context, index) {
+                return RoomTile(_roomFilter[index]);
+              },
+            )
+          : _emptyList(),
     );
   }
 }

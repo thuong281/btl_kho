@@ -94,7 +94,7 @@ class _RoomDetailState extends State<RoomDetail> {
                           return CachedNetworkImage(
                             imageUrl: imagePath,
                             placeholder: (context, url) =>
-                                CircularProgressIndicator(),
+                                Image.asset('assests/placeholder.jpg'),
                             errorWidget: (context, url, error) =>
                                 Icon(Icons.error),
                           );

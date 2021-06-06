@@ -53,7 +53,7 @@ class RoomTile extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    room.area.toString(),
+                    room.district,
                     overflow: TextOverflow.clip,
                     softWrap: true,
                     maxLines: 2,
