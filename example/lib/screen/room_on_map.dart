@@ -227,62 +227,142 @@ class PlaceSymbolBodyState extends State<PlaceSymbolBody> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Map",
-        ),
-        backgroundColor: Colors.green,
-      ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Center(
             child: SizedBox(
-              width: 400.0,
-              height: 500.0,
+              height: 400.0,
               child: weMap,
             ),
           ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  FlatButton(
-                    child: const Text('add'),
-                    onPressed: () {
-                      // ignore: sdk_version_ui_as_code
-                      if (show) {
-                        for (Room room in widget.room) {
-                          controller.addSymbol(
-                            SymbolOptions(
-                              geometry: LatLng(
-                                room.lat,
-                                room.long,
-                              ),
-                              iconSize: 1,
-                              iconImage: iconImage,
-                            ),
-                            room.toJson(),
-                          );
-                        }
-                        show = false;
-                      }
-                    },
-                  ),
-                  FlatButton(
-                    child: const Text('remove'),
-                    onPressed: () {
-                      Room selectedRoom = Room.fromJson(_selectedSymbol.data);
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => RoomDetail(selectedRoom)));
-                    },
-                  ),
-                ],
+          Row(
+            children: [
+              Icon(
+                Icons.location_on_outlined,
+                size: 28,
               ),
-            ),
+              SizedBox(
+                width: 15,
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedSymbol != null
+                          ? Room.fromJson(_selectedSymbol.data).address
+                          : "No data",
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.blue[400],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Icon(
+                Icons.zoom_out_map,
+                size: 28,
+              ),
+              SizedBox(
+                width: 15,
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedSymbol != null
+                          ? Room.fromJson(_selectedSymbol.data).area
+                          : "No data",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Icon(
+                Icons.monetization_on_sharp,
+                size: 28,
+              ),
+              SizedBox(
+                width: 15,
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedSymbol != null
+                          ? Room.fromJson(_selectedSymbol.data).price
+                          : "No data",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                child: Text("Ẩn/hiện trên bản đồ"),
+                onPressed: () {
+                  if (show) {
+                    for (Room room in widget.room) {
+                      controller.addSymbol(
+                        SymbolOptions(
+                          geometry: LatLng(
+                            room.lat,
+                            room.long,
+                          ),
+                          iconSize: 1,
+                          iconImage: iconImage,
+                        ),
+                        room.toJson(),
+                      );
+                    }
+                    show = false;
+                  } else {
+                    controller.clearSymbols();
+                    setState(() {
+                      _selectedSymbol = null;
+                    });
+                    show = true;
+                  }
+                },
+              ),
+              ElevatedButton(
+                child: Text("Xem chi tiết"),
+                onPressed: () {
+                  Room selectedRoom = Room.fromJson(_selectedSymbol.data);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RoomDetail(selectedRoom),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),

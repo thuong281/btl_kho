@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wemapgl/wemapgl.dart' as WEMAP;
-import 'package:wemapgl_example/screen/options.dart';
-import 'package:wemapgl_example/screen/room_list.dart';
+import 'package:wemapgl_example/screen/tab_bar.dart';
 
 void main() {
   WEMAP.Configuration.setWeMapKey('GqfwrZUEfxbwbnQUhtBMFivEysYIxelQ');
