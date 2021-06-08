@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:wemapgl/wemapgl.dart';
 import 'package:wemapgl_example/model/room.dart';
 import 'package:wemapgl_example/screen/room_detail.dart';
@@ -18,6 +19,13 @@ class PlaceSymbolBody extends StatefulWidget {
 class PlaceSymbolBodyState extends State<PlaceSymbolBody> {
   static final LatLng center = const LatLng(20.8275, 105.3391);
   String iconImage = "assets/symbols/origin.png";
+
+  Future<Position> getCurrentLocation() async {
+    Position position = await Geolocator()
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+    return position;
+  }
+
   HashMap map = new HashMap<String, Room>();
   bool show = true;
   WeMapController controller;
@@ -199,13 +207,6 @@ class PlaceSymbolBodyState extends State<PlaceSymbolBody> {
   @override
   void initState() {
     super.initState();
-    weMap = WeMap(
-      onMapCreated: _onMapCreated,
-      initialCameraPosition: const CameraPosition(
-        target: LatLng(21.0278, 105.8342),
-        zoom: 14.0,
-      ),
-    );
   }
 
   // @override
@@ -224,148 +225,171 @@ class PlaceSymbolBodyState extends State<PlaceSymbolBody> {
   //   }
   // }
 
+  circularProgress() {
+    return Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Center(
-            child: SizedBox(
-              height: 400.0,
-              child: weMap,
-            ),
-          ),
-          Row(
-            children: [
-              Icon(
-                Icons.location_on_outlined,
-                size: 28,
-              ),
-              SizedBox(
-                width: 15,
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _selectedSymbol != null
-                          ? Room.fromJson(_selectedSymbol.data).address
-                          : "No data",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.blue[400],
+    Future _future = getCurrentLocation();
+    return FutureBuilder(
+      future: _future,
+      builder: (context, snapshot) {
+        if (snapshot.data == null) {
+          return circularProgress();
+        } else {
+          Position position = snapshot.data;
+          return Scaffold(
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Center(
+                  child: SizedBox(
+                    height: 415,
+                    child: weMap = WeMap(
+                      onMapCreated: _onMapCreated,
+                      initialCameraPosition: CameraPosition(
+                        target: LatLng(position.latitude, position.longitude),
+                        zoom: 13.0,
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Icon(
-                Icons.zoom_out_map,
-                size: 28,
-              ),
-              SizedBox(
-                width: 15,
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
-                    Text(
-                      _selectedSymbol != null
-                          ? Room.fromJson(_selectedSymbol.data).area
-                          : "No data",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                      ),
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 28,
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Icon(
-                Icons.monetization_on_sharp,
-                size: 28,
-              ),
-              SizedBox(
-                width: 15,
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _selectedSymbol != null
-                          ? Room.fromJson(_selectedSymbol.data).price
-                          : "No data",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                      ),
+                    SizedBox(
+                      width: 15,
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                child: Text("Ẩn/hiện trên bản đồ"),
-                onPressed: () {
-                  if (show) {
-                    for (Room room in widget.room) {
-                      controller.addSymbol(
-                        SymbolOptions(
-                          geometry: LatLng(
-                            room.lat,
-                            room.long,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _selectedSymbol != null
+                                ? Room.fromJson(_selectedSymbol.data).address
+                                : "No data",
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.blue[400],
+                            ),
                           ),
-                          iconSize: 1,
-                          iconImage: iconImage,
-                        ),
-                        room.toJson(),
-                      );
-                    }
-                    show = false;
-                  } else {
-                    controller.clearSymbols();
-                    setState(() {
-                      _selectedSymbol = null;
-                    });
-                    show = true;
-                  }
-                },
-              ),
-              ElevatedButton(
-                child: Text("Xem chi tiết"),
-                onPressed: () {
-                  Room selectedRoom = Room.fromJson(_selectedSymbol.data);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RoomDetail(selectedRoom),
+                        ],
+                      ),
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.zoom_out_map,
+                      size: 28,
+                    ),
+                    SizedBox(
+                      width: 15,
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _selectedSymbol != null
+                                ? Room.fromJson(_selectedSymbol.data).area
+                                : "No data",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.monetization_on_sharp,
+                      size: 28,
+                    ),
+                    SizedBox(
+                      width: 15,
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _selectedSymbol != null
+                                ? Room.fromJson(_selectedSymbol.data).price
+                                : "No data",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      child: Text("Ẩn/hiện trên bản đồ"),
+                      onPressed: () {
+                        if (show) {
+                          for (Room room in widget.room) {
+                            controller.addSymbol(
+                              SymbolOptions(
+                                geometry: LatLng(
+                                  room.lat,
+                                  room.long,
+                                ),
+                                iconSize: 1,
+                                iconImage: iconImage,
+                              ),
+                              room.toJson(),
+                            );
+                          }
+                          show = false;
+                        } else {
+                          controller.clearSymbols();
+                          setState(() {
+                            _selectedSymbol = null;
+                          });
+                          show = true;
+                        }
+                      },
+                    ),
+                    ElevatedButton(
+                      child: Text("Xem chi tiết"),
+                      onPressed: () {
+                        Room selectedRoom = Room.fromJson(_selectedSymbol.data);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RoomDetail(selectedRoom),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }
+      },
     );
   }
 }

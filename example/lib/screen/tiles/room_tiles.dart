@@ -29,7 +29,7 @@ class RoomTile extends StatelessWidget {
                   child: CachedNetworkImage(
                     imageUrl: room.image[0],
                     placeholder: (context, url) =>
-                        Image.asset('assests/placeholder.jpg'),
+                        Image.asset('assets/placeholder.jpg'),
                   ),
                   fit: BoxFit.fill,
                 ),
